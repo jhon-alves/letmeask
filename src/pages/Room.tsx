@@ -13,19 +13,56 @@ type RoomParams = {
   id: string;
 }
 
+type FirebaseQuestions = Record<string, {
+  author: {
+    name: string;
+    avatar: string;
+  }
+  content: string;
+  isAnswered: boolean;
+  isHighlighted: boolean;
+}>
+
+type Question = {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+  }
+  content: string;
+  isAnswered: boolean;
+  isHighlighted: boolean;
+}
+
+
 export function Room() {
   const { user } = useAuth();
   const params = useParams<RoomParams>();
   const roomId = params.id;
   const [ newQuestion, setNewQuestion ] = useState('');
+  const [ questions, setQuestions ] = useState<Question[]>([]);
+  const [ title, setTitle ] = useState('');
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
 
-    roomRef.once('value', room => {
-      console.log(room.val());
+    roomRef.on('value', room => {
+      const databaseRoom = room.val();
+      const firebaseQuestions: FirebaseQuestions = databaseRoom.questions ?? {};
+      const parsedQuestions = Object.entries(firebaseQuestions).map(([key, value]) => {
+        return{
+          id: key,
+          content: value.content,
+          author: value.author,
+          isAnswered: value.isAnswered,
+          isHighlighted: value.isHighlighted,
+        }
+      })
+
+      setTitle(databaseRoom.title);
+      setQuestions(parsedQuestions);
     })
-  }, []);
+  }, [roomId]);
 
   async function handleSendQuestion(event: FormEvent) {
     event.preventDefault();
@@ -64,8 +101,8 @@ export function Room() {
 
       <main>
         <div className="room-title">
-          <h1>Sala React</h1>
-          <span>4 perguntas</span>
+          <h1>{title}</h1>
+          { questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
         </div>
 
         <form onSubmit={handleSendQuestion}>
@@ -86,6 +123,8 @@ export function Room() {
             <Button type="submit" disabled={!user}>Enviar Pergunta</Button>
           </div>
         </form>
+
+        {JSON.stringify(questions)}
       </main>
     </div>
   );
