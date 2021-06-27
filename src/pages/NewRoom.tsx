@@ -43,7 +43,7 @@ export function NewRoom() {
         <div className="main-content">
           <img src={logo} alt="Logo" />
           <div className="user-content">
-            { user && <img src={user.avatar} /> }
+            { user && <img src={user.avatar} alt={user.name}/> }
             <p>{user?.name}</p>
           </div>
           <h2>Crie uma nova sala</h2>
