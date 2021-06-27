@@ -4,6 +4,8 @@ import { Button } from '../components/Button';
 import { RoomCode } from '../components/RoomCode';
 
 import logo from '../assets/images/logo.svg';
+import checkIcon from '../assets/images/check.svg';
+import answerIcon from '../assets/images/answer.svg';
 import deleteIcon from '../assets/images/delete.svg';
 
 import '../styles/room.scss';
@@ -35,6 +37,18 @@ export function AdminRoom() {
     }
   }
 
+  async function handleCheckQuestionAsAnswered(questionId: string) {
+    await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+      isAnswered: true,
+    });
+  }
+
+  async function handleHighlightQuestion(questionId: string) {
+    await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+      isHighlighted: true,
+    });
+  }
+
   return (
     <div id="page-room">
       <header>
@@ -60,13 +74,35 @@ export function AdminRoom() {
                 key={question.id}
                 content={question.content}
                 author={question.author}
+                isAnswered={question.isAnswered}
+                isHighlighted={question.isHighlighted}
               >
-                <button
-                  type="button"
-                  onClick={() => handleDeleteQuestion(question.id)}
-                >
-                  <img src={deleteIcon} alt="Deletar" />
-                </button>
+                <div className="btn-gap">
+                  {!question.isAnswered && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleCheckQuestionAsAnswered(question.id)}
+                      >
+                        <img src={checkIcon} alt="Marcar como respondida" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleHighlightQuestion(question.id)}
+                      >
+                        <img src={answerIcon} alt="Dar destaque" />
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteQuestion(question.id)}
+                  >
+                    <img src={deleteIcon} alt="Deletar" />
+                  </button>
+                </div>
               </Question>
             )
           })}
